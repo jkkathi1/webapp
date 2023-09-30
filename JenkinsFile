@@ -16,7 +16,7 @@ pipeline {
     stage ('Build') {
         steps {
         
-          sh '/usr/share/bin/mvn clean package'
+          sh '/usr/share/maven/bin/mvn clean package'
     }
 
  
