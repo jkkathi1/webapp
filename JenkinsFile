@@ -13,7 +13,7 @@ pipeline {
      }
    }
 
-    stage ('Check-GitRepo-Secrets') {
+    stage ('Check-GitRepo-Secrets-TruffleHog') {
       steps {
         sh 'rm trufflehog || true'
         sh 'docker run gesellix/trufflehog --json https://github.com/jkkathi1/webapp.git > trufflehog'
@@ -21,7 +21,7 @@ pipeline {
       }
     }
 
-    stage ('Check Source Libraries - Composition Analysis') {
+    stage ('Check Source Libraries - Composition Analysis-OWASP') {
       steps {
          sh 'rm owasp* || true'
          sh 'wget "https://raw.githubusercontent.com/jkkathi1/webapp/master/owasp-dependency-check.sh" '
@@ -29,6 +29,15 @@ pipeline {
          sh 'bash owasp-dependency-check.sh'
          sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
         
+      }
+    }
+
+    stage ('Sonarqube SAST') {
+      steps {
+        withSonarQubeEnv('sonar') {
+          sh 'mvn sonar:sonar'
+          sh 'cat target/sonar/report-task.txt'
+        }
       }
     }
 
@@ -43,7 +52,7 @@ pipeline {
     stage ('Deploy-To-Tomcat') {
           steps {
             sshagent(['tomcat']) {
-                sh 'scp -o StrictHostKeyChecking=no target/*.war ubuntu@54.87.58.212:/opt/tomcat/webapps/webapp.war'
+                sh 'scp -o StrictHostKeyChecking=no target/*.war ubuntu@3.91.234.29:/opt/tomcat/webapps/webapp.war'
               }      
            }       
     }
